@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NBR 8160 Esgoto</title>
+<meta name="description" content="Consulta de bolso da NBR 8160:1999 — esgoto sanitário predial">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icone.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icone-192.png">
+<meta name="theme-color" content="#6b4423">
+<style>
+:root{--bg:#f7f4ef;--card:#fff;--tx:#1f1b16;--mu:#6b6258;--ac:#6b4423;--ac2:#a0682f;--bd:#e3dbd0;--ok:#2e7d32}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15120f;--card:#1f1a15;--tx:#efe8df;--mu:#a99d90;--ac:#d39a5c;--ac2:#e8b27a;--bd:#3a3128}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:76px}
+header{background:var(--ac);color:#fff;padding:12px 16px calc(12px) ;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:18px}header small{opacity:.85}
+main{padding:12px 16px;max-width:900px;margin:auto}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom);z-index:6}
+nav button{flex:1;border:0;background:none;color:var(--mu);padding:8px 2px;font-size:12px}
+nav button span{display:block;font-size:20px}
+nav button.on{color:var(--ac);font-weight:600}
+input,select{font:inherit;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);width:100%}
+input[type=checkbox]{width:auto}
+.linha{display:flex;gap:8px;align-items:center;margin:6px 0}
+.btn{border:0;border-radius:10px;padding:10px 14px;background:var(--ac);color:#fff;font:inherit;white-space:nowrap}
+.btn.sec{background:var(--bd);color:var(--tx)}
+.card,.box,.tab{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;margin:10px 0}
+.card h3,.tab h3,.box h3{margin:0 0 6px;font-size:16px}
+.card p{margin:0 0 6px}
+.meta{font-size:13px;color:var(--mu);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pg{border:1px solid var(--bd);background:none;color:var(--ac);border-radius:8px;padding:2px 8px;font-size:13px}
+.rol{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}
+th{color:var(--mu);font-weight:600;white-space:nowrap}
+.out{margin-top:8px;padding:10px;border-radius:10px;background:color-mix(in srgb,var(--ac) 10%,transparent)}
+.nota{font-size:14px;color:var(--mu)}
+.vazio{color:var(--mu);text-align:center;padding:20px}
+label{font-size:14px;color:var(--mu)}
+canvas{display:block;margin:8px auto;background:#fff;border-radius:6px;max-width:100%}
+h2{font-size:17px;margin:14px 0 4px}
+</style>
+</head>
+<body>
+<header><h1>NBR 8160 · Esgoto sanitário</h1><small>Consulta de bolso — projeto e execução (1999)</small></header>
+<main>
+<section class="aba" id="aBusca">
+  <div class="linha"><input id="q" type="search" placeholder="Dúvida? ex.: caixa de gordura, declividade, ventilação…" autocomplete="off"></div>
+  <div class="linha"><button class="btn sec" id="claude">💬 Perguntar ao Claude</button></div>
+  <div id="res"></div>
+  <p class="nota">Resumo de estudo com o item e a página da norma. Na dúvida, toque em 📄 e leia o original.</p>
+</section>
+
+<section class="aba" id="aTab" hidden><div id="tabelas"></div></section>
+
+<section class="aba" id="aCalc" hidden>
+  <div class="box"><h3>1 · Somar UHC de um ambiente</h3>
+    <div class="linha"><select id="ap"></select><input id="qt" type="number" value="1" min="1" style="width:70px"></div>
+    <div class="linha"><button class="btn" id="add">Adicionar</button><button class="btn sec" id="limpa">Limpar</button></div>
+    <ul id="grupo"></ul><div class="out" id="outGrupo"></div></div>
+
+  <div class="box"><h3>2 · Tubo de queda + coluna de ventilação</h3>
+    <label>UHC total no TQ</label><input id="tqU" inputmode="decimal" value="270">
+    <label>Nº de pavimentos</label><input id="tqP" inputmode="numeric" value="10">
+    <label>Comprimento da coluna de ventilação (m)</label><input id="tqL" inputmode="decimal" value="30.3">
+    <div class="linha"><input id="tqB" type="checkbox" checked><label for="tqB">recebe bacia (mín. DN 100)</label></div>
+    <div class="out" id="outTQ"></div></div>
+
+  <div class="box"><h3>3 · Subcoletor / coletor predial</h3>
+    <label>UHC (residencial: só o maior aparelho de cada banheiro)</label><input id="coU" inputmode="decimal" value="1080">
+    <div class="out" id="outCol"></div></div>
+
+  <div class="box"><h3>4 · Caixa de gordura</h3>
+    <label>Nº de cozinhas</label><input id="cgC" inputmode="numeric" value="10">
+    <label>Pessoas no turno de maior afluxo (só p/ CGE)</label><input id="cgN" inputmode="numeric" value="0">
+    <div class="linha"><input id="cgE" type="checkbox"><label for="cgE">restaurante/escola/hospital (força CGE)</label></div>
+    <div class="out" id="outCG"></div></div>
+
+  <div class="box"><h3>5 · Caixa coletora (recalque)</h3>
+    <label>Vazão da bomba Q (m³/min)</label><input id="reQ" inputmode="decimal" value="0.3">
+    <label>Intervalo entre partidas t (min)</label><input id="reT" inputmode="decimal" value="10">
+    <label>Volume total da caixa Vt (m³) — opcional</label><input id="reV" inputmode="decimal" value="1">
+    <label>Vazão média afluente q (m³/min) — opcional</label><input id="reA" inputmode="decimal" value="0.1">
+    <div class="out" id="outRec"></div></div>
+</section>
+
+<section class="aba" id="aPredio" hidden><h2>Nosso prédio — 10 pavimentos</h2><div id="predio"></div></section>
+
+<section class="aba" id="aPdf" hidden>
+  <p id="pdfStatus" class="nota"></p>
+  <div class="linha"><label class="btn sec" style="color:var(--tx)">📂 Escolher PDF<input id="arq" type="file" accept="application/pdf" hidden></label></div>
+  <div class="linha"><button class="btn sec" id="ant">◀</button><input id="pdfPag" type="number" min="1" value="1" style="width:80px"><span>/ <span id="pdfTot">—</span></span><button class="btn sec" id="prox">▶</button></div>
+  <canvas id="cv"></canvas>
+  <p class="nota">O PDF fica guardado só neste celular; não é enviado para lugar nenhum.</p>
+</section>
+</main>
+<nav>
+  <button data-aba="aBusca" class="on"><span>🔎</span>Dúvidas</button>
+  <button data-aba="aTab"><span>📋</span>Tabelas</button>
+  <button data-aba="aCalc"><span>🧮</span>Calcular</button>
+  <button data-aba="aPredio"><span>🏢</span>Prédio</button>
+  <button data-aba="aPdf"><span>📄</span>Norma</button>
+</nav>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="dados.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
