@@ -89,6 +89,10 @@ svg.draw{width:100%;height:auto;display:block;margin:6px 0;background:color-mix(
 @keyframes treme{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .res{text-align:center}
 @media (max-width:380px){.cards3{grid-template-columns:1fr}}
+.apk{display:flex;gap:10px;align-items:center;background:linear-gradient(135deg,#2e8b57,#3aa76d);color:#fff;border-radius:16px;padding:12px 14px;margin:10px 0;text-decoration:none;box-shadow:var(--sh)}
+.apk b{display:block}.apk span{font-size:30px}[data-apk] .apk{display:none}
+model-viewer{width:100%;height:380px;background:color-mix(in srgb,var(--blue) 6%,var(--card));border-radius:16px;--poster-color:transparent}
+.v3d{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px 14px;margin:10px 0;box-shadow:var(--sh)}
 </style>
 </head>
 <body>
@@ -96,8 +100,12 @@ svg.draw{width:100%;height:auto;display:block;margin:6px 0;background:color-mix(
 <main>
 <section class="aba" id="aPredio">
   <h2>🏢 Nosso prédio — 10 pavimentos</h2>
+  <a class="apk" href="https://github.com/backsilva29-maker/nbr8160-esgoto/releases/latest/download/NBR8160.apk"><span>📲</span><div><b>Baixar o app Android (APK)</b><small>funciona sem internet · instala como aplicativo</small></div></a>
   <p class="nota">Escolha a prumada, veja o esgoto descer e toque num andar.</p>
   <div id="vPredio"></div>
+  <div class="v3d"><h3>🧊 O prédio de verdade em 3D</h3>
+    <p class="nota">Modelo do nosso projeto no Revit (arquitetura). Gire com um dedo, zoom com dois. Precisa de internet (13 MB).</p>
+    <div id="v3d"><button class="btn" id="abre3d">Carregar o 3D</button></div></div>
   <details><summary>📋 Tabela completa do pré-dimensionamento</summary><div id="predio"></div></details>
 </section>
 
@@ -161,6 +169,16 @@ svg.draw{width:100%;height:auto;display:block;margin:6px 0;background:color-mix(
 <script src="visual.js"></script>
 <script>
   VISUAL.predio(document.getElementById("vPredio"));
+  // 3D com google/model-viewer (carrega só quando pedir)
+  document.getElementById("abre3d").onclick = () => {
+    const box = document.getElementById("v3d");
+    box.innerHTML = "<p class='nota'>Carregando o modelo…</p>";
+    const s = document.createElement("script"); s.type = "module";
+    s.src = "https://cdn.jsdelivr.net/npm/@google/model-viewer@4.1.0/dist/model-viewer.min.js";
+    s.onload = () => { box.innerHTML = '<model-viewer src="https://backsilva29-maker.github.io/nbr8160-esgoto/predio3d.glb" camera-controls touch-action="pan-y" auto-rotate shadow-intensity="0.6" exposure="1.1" alt="Prédio de 10 pavimentos em 3D"></model-viewer>'; };
+    s.onerror = () => { box.innerHTML = "<p class='nota'>Sem internet agora — o 3D precisa de conexão.</p>"; };
+    document.head.append(s);
+  };
   VISUAL.aprender(document.getElementById("vAprender"));
   VISUAL.treinar(document.getElementById("vTreinar"));
   document.getElementById("q").addEventListener("input", e => { document.querySelector("#aBusca details").open = !!e.target.value; });

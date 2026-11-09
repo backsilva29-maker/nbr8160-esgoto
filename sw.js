@@ -1,5 +1,5 @@
 // Cache offline: app + pdf.js. O PDF da norma fica no IndexedDB do aparelho, não aqui.
-const V = "nbr8160-v5";
+const V = "nbr8160-v6";
 const ARQ = ["./", "index.html", "dados.js", "app.js", "visual.js", "quiz.js", "manifest.json", "icone.svg", "icone-192.png", "icone-512.png",
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"];
