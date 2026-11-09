@@ -90,10 +90,13 @@
   }
   async function extrairTextos() { for (let i = 1; i <= doc.numPages; i++) { await textoPagina(i); if (i % 8 === 0) await new Promise(r => setTimeout(r)); } }
 
+  const esc = s => String(s || "").replace(/[<&"]/g, c => ({ "<": "&lt;", "&": "&amp;", '"': "&quot;" })[c]);
+  const item = x => `<div class="it n${x.nivel || 2}"><b>${esc(x.id)}</b> ${esc(x.tit)}${x.resumo ? `<small>${esc(x.resumo)}</small>` : ""}
+      <span class="chips">${x.quadro ? `<button class="chip quadro" data-q="${esc(x.quadro)}">🎛️ quadro</button>` : ""}${x.pergunta ? `<button class="chip perg" data-p="${encodeURIComponent(x.pergunta)}" data-r="${encodeURIComponent(x.resposta || "")}">❓ pergunta de prova</button>` : ""}</span></div>`;
   function chipsSecao(n) {
     const s = mapa().filter(x => x.pag === n); if (!s.length) return "";
-    return `<div class="leit-sec">${s.map(x => `<div><b>${x.id}</b> ${x.tit}${x.resumo ? `<small>${x.resumo}</small>` : ""}
-      <span class="chips">${x.quadro ? `<button class="chip quadro" data-q="${x.quadro}">🎛️ quadro interativo</button>` : ""}${x.pergunta ? `<button class="chip perg" data-p="${encodeURIComponent(x.pergunta)}" data-r="${encodeURIComponent(x.resposta || "")}">❓ pergunta de prova</button>` : ""}</span></div>`).join("")}</div>`;
+    const fortes = s.filter(x => (x.nivel || 2) <= 2), miudos = s.filter(x => (x.nivel || 2) > 2);
+    return `<div class="leit-sec">${fortes.map(item).join("")}${miudos.length ? `<details><summary>＋ ${miudos.length} ${miudos.length > 1 ? "itens" : "item"} nesta página (${esc(miudos.slice(0, 3).map(x => x.id).join(", "))}${miudos.length > 3 ? "…" : ""})</summary>${miudos.map(item).join("")}</details>` : ""}</div>`;
   }
 
   let obs = null, proporcao = 842 / 595; // A4 em pé; atualizado com a página 1 real
@@ -105,7 +108,10 @@
     const corpo = raiz.querySelector(".leit-corpo"); corpo.innerHTML = ""; corpo.className = "leit-corpo m-" + modo; corpo.style.setProperty("--fs", fonte + "px");
     if (obs) obs.disconnect();
     if (modo === "sum") {
-      corpo.innerHTML = mapa().map(x => `<button class="sum n${x.nivel || 2}" data-ir="${x.pag}"><span><b>${x.id}</b> ${x.tit}</span><em>${x.quadro ? "🎛️ " : ""}p. ${x.pag}</em></button>`).join("");
+      const tudo = ls("leit_sum_tudo") === "1", lista = mapa().filter(x => tudo || (x.nivel || 2) <= 2 || /^(Tab|Fig)/i.test(x.id));
+      corpo.innerHTML = `<button class="btn sec sum-tudo">${tudo ? "➖ só capítulos, seções, tabelas e figuras" : `➕ mostrar todos os ${mapa().length} itens`}</button>` +
+        lista.map(x => `<button class="sum n${x.nivel || 2}" data-ir="${x.pag}"><span><b>${esc(x.id)}</b> ${esc(x.tit)}</span><em>${x.quadro ? "🎛️ " : ""}p. ${x.pag}</em></button>`).join("");
+      corpo.querySelector(".sum-tudo").onclick = () => { ls("leit_sum_tudo", tudo ? "0" : "1"); render(); };
       return;
     }
     obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) desenha(e.target); }), { rootMargin: "600px 0px" });
