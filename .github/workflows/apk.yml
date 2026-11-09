@@ -26,18 +26,13 @@ jobs:
           [ -f ~/.android/debug.keystore ] || keytool -genkeypair -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10950 -dname "CN=Android Debug,O=Android,C=US"
       - name: Testes do app (tabelas x norma ficam fora - texto da ABNT nao esta no repo)
         run: node -e "new Function(require('fs').readFileSync('visual.js','utf8')); new Function(require('fs').readFileSync('app.js','utf8')); console.log('sintaxe ok')"
-      - name: Montar www offline (pdf.js local, sem service worker)
+      - name: Montar www offline = UM arquivo index.html autossuficiente (fallback errorPath do Capacitor)
         run: |
-          mkdir -p www
-          cp index.html versao.js dados.js app.js visual.js quiz.js manifest.json icone.svg icone-192.png icone-512.png www/
-          [ -f guia.js ] && cp guia.js www/ || true
-          curl -fsSL https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js -o www/pdf.min.js
-          curl -fsSL https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js -o www/pdf.worker.min.js
-          sed -i 's#https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js#pdf.min.js#' www/index.html
-          sed -i 's#https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js#pdf.worker.min.js#' www/app.js
-          sed -i 's#navigator.serviceWorker.register("sw.js")#Promise.resolve()#' www/app.js
-          sed -i 's#<html lang="pt-BR">#<html lang="pt-BR" data-apk="1" data-embutido="1">#' www/index.html
-          grep -c "pdf.min.js" www/index.html
+          curl -fsSL https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js -o pdf.min.js
+          curl -fsSL https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js -o pdf.worker.min.js
+          node embutir.js . www/index.html
+          cp icone-192.png icone-512.png www/
+          ! grep -q '<script src=' www/index.html
       - name: Capacitor Android
         run: |
           npm init -y > /dev/null
