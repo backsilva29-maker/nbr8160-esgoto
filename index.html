@@ -96,7 +96,7 @@ model-viewer{width:100%;height:380px;background:color-mix(in srgb,var(--blue) 6%
 </style>
 </head>
 <body>
-<header><h1>NBR 8160 · Esgoto sanitário</h1><small>Interativa · projeto e execução (1999)</small></header>
+<header><h1>NBR 8160 · Esgoto sanitário</h1><small>Interativa · projeto e execução (1999) · <span id="versao"></span></small></header>
 <main>
 <section class="aba" id="aPredio">
   <h2>🏢 Nosso prédio — 10 pavimentos</h2>
@@ -166,6 +166,7 @@ model-viewer{width:100%;height:380px;background:color-mix(in srgb,var(--blue) 6%
   <button data-aba="aPdf"><span>📄</span>Norma</button>
 </nav>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="versao.js"></script>
 <script src="dados.js"></script>
 <script src="quiz.js"></script>
 <script src="app.js"></script>
@@ -186,6 +187,10 @@ model-viewer{width:100%;height:380px;background:color-mix(in srgb,var(--blue) 6%
   VISUAL.aprender(document.getElementById("vAprender"));
   VISUAL.treinar(document.getElementById("vTreinar"));
   GUIA.render(document.getElementById("vGuia"));
+  // versão visível + dentro do app Android (Capacitor) esconde o botão de baixar APK
+  const EMBUTIDA = document.documentElement.hasAttribute("data-embutido");
+  if (window.Capacitor || EMBUTIDA) document.documentElement.setAttribute("data-apk", "1");
+  document.getElementById("versao").textContent = "versão " + (window.VERSAO || "?") + (EMBUTIDA ? " (offline, a do APK)" : "");
   document.getElementById("q").addEventListener("input", e => { document.querySelector("#aBusca details").open = !!e.target.value; });
 </script>
 </body>

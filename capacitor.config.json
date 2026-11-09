@@ -2,5 +2,10 @@
   "appId": "br.silva.nbr8160",
   "appName": "NBR 8160",
   "webDir": "www",
+  "server": {
+    "url": "https://backsilva29-maker.github.io/nbr8160-esgoto/",
+    "errorPath": "index.html",
+    "allowNavigation": ["backsilva29-maker.github.io"]
+  },
   "android": { "backgroundColor": "#f6f2ec" }
 }
