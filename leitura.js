@@ -32,6 +32,9 @@
 
   function montar() {
     const box = $("#vLeitura"); if (!box) return;
+    // barra fixa da leitura sempre logo abaixo da altura REAL do cabeçalho (que muda com a largura/versão)
+    const hdr = document.querySelector("header"), ajusta = () => document.documentElement.style.setProperty("--hh", (hdr ? hdr.offsetHeight : 64) + "px");
+    ajusta(); window.addEventListener("resize", ajusta); if (window.ResizeObserver && hdr) new ResizeObserver(ajusta).observe(hdr);
     box.append(raiz);
     raiz.innerHTML = `
       <div class="leit-vazio" hidden>
