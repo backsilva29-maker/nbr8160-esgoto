@@ -79,8 +79,10 @@
       svg.append(S("path", { d: `M${xTQ} ${yBase} L${xCI} ${yBase}`, class: "tq", "stroke-width": sw }));
       svg.append(S("rect", { x: xCI, y: yBase - 14, width: 30, height: 28, rx: 3, class: "caixa" }));
       svg.append(T(xCI + 15, yBase + 4, base[st.prumada], "lb b", { "text-anchor": "middle" }));
-      svg.append(S("line", { x1: xTQ, x2: xCI, y1: yBase + 22, y2: yBase + 22, class: "cota" }));
-      svg.append(T((xTQ + xCI) / 2, yBase + 34, "≥ 2,00 m do TQ", "lb", { "text-anchor": "middle" }));
+      if (st.prumada === 0) { // 4.2.6.2: distância vale para CAIXA DE INSPEÇÃO
+        svg.append(S("line", { x1: xTQ, x2: xCI, y1: yBase + 22, y2: yBase + 22, class: "cota" }));
+        svg.append(T((xTQ + xCI) / 2, yBase + 34, "CI ≥ 2,00 m do TQ", "lb", { "text-anchor": "middle" }));
+      } else svg.append(T(xCI + 15, yBase + 30, st.prumada === 1 ? "caixa de gordura coletiva" : "caixa sifonada especial", "lb mu", { "text-anchor": "middle" }));
       svg.append(T(xTQ - 4, yBase + 46, `TQ DN ${dn}`, "lb b", { "text-anchor": "end" }));
       // gotas descendo
       const path = `M${xTQ} ${top + 10} L${xTQ} ${yBase} L${xCI} ${yBase}`;
@@ -92,7 +94,7 @@
       // cartão e KPIs
       const sel = st.sel;
       if (sel && sel >= 1) {
-        const acc = uPav * (nP - sel + 1), dnK = C.tuboQueda(acc, nP);
+        const acc = uPav * (nP - sel + 1), dnK = C.tuboQueda(acc, nP, st.prumada === 0 ? 100 : 0); // banheiros: bacia exige DN 100 (Tab. 3)
         card.innerHTML = `<b>${sel}º pavimento</b>: o tubo de queda já leva <b>${acc} UHC</b> (${nP - sel + 1} andares × ${uPav}). Pela Tab. 6 esse trecho precisaria de <b>DN ${dnK}</b>; o TQ é dimensionado pelo total (${tq.uhc} UHC → <b>DN ${dn}</b>).`;
       } else card.innerHTML = "👆 Toque num andar para ver quanto esgoto (UHC) o tubo de queda já carrega ali.";
       info.innerHTML = [["UHC por andar", uPav], ["UHC no TQ", tq.uhc], ["DN do TQ", dn], ["Coluna de vent.", "DN " + (tq.cv.dn ?? "?")], ["Coletor (todo o prédio)", R.uhcColetor + " UHC → DN " + R.coletor.d1 + " a 1%"]]
@@ -175,13 +177,14 @@
     const svg = S("svg", { viewBox: "0 0 320 230", class: "draw" }), out = H("div", { className: "out" });
     let dn = 100;
     function draw() {
-      const k = 6, z40 = 40 * dn / 1000 * k * 4, z10 = 10 * dn / 1000 * k * 4; // escala didática
+      const pxm = 20, z40 = 40 * dn / 1000 * pxm, z10 = 10 * dn / 1000 * pxm; // escala: 20 px por metro (DN 150 → 120 px)
       svg.replaceChildren();
       svg.append(S("rect", { x: 46, y: 170 - z40, width: 28, height: z40, class: "zona" }));
       svg.append(S("rect", { x: 60, y: 160, width: z10, height: 20, class: "zona" }));
       svg.append(S("rect", { x: 60 + z10 + 60, y: 160, width: z40 * 0.6, height: 20, class: "zona" }));
       svg.append(S("path", { d: "M60 5 V170 H300", class: "tq", "stroke-width": 9 }));
-      [30, 60].forEach(y => { svg.append(S("line", { x1: 10, x2: 58, y1: y, y2: y + 6, class: "ramal" })); svg.append(T(4, y - 4, "✔ ok", "lb green")); });
+      // ramais "ok" sempre acima da zona (a zona máxima, DN 150, começa em y = 50)
+      [18, 38].forEach(y => { svg.append(S("line", { x1: 10, x2: 58, y1: y, y2: y + 6, class: "ramal" })); svg.append(T(4, y - 4, "✔ ok", "lb green")); });
       svg.append(S("line", { x1: 10, x2: 58, y1: 150, y2: 156, class: "ramal bad" })); svg.append(T(2, 146, "✖ espuma", "lb red"));
       svg.append(T(82, 175 - z40 / 2, `40 DN = ${fmt(40 * dn / 1000)} m`, "lb red b")); svg.append(T(62, 200, `10 DN = ${fmt(10 * dn / 1000)} m`, "lb red"));
       svg.append(T(60 + z10 + 60, 200, "40 DN antes do próximo desvio", "lb red"));
@@ -200,7 +203,9 @@
       svg.append(S("rect", { x: 0, y: laje, width: 320, height: 40, class: "bld" }));
       svg.append(S("rect", { x: xJ - 18, y: laje - 70, width: 36, height: 60, class: "janela" })); svg.append(T(xJ - 22, laje - 76, "janela", "lb mu"));
       if (uso) svg.append(T(4, laje - 4, "🙂 laje com uso", "lb"));
-      const topo = laje - hMin * k - (perto ? 30 : 0);
+      const verga = laje - 70; // topo da janela desenhada
+      const topo = perto ? Math.min(laje - hMin * k, verga - 1 * k) : laje - hMin * k; // 1,00 m acima da verga (4.3.6 a)
+      if (perto) { svg.append(S("line", { x1: xJ - 18, x2: 300, y1: verga, y2: verga, class: "cota" })); svg.append(T(xJ + 22, verga + 10, "verga", "lb mu")); }
       svg.append(S("line", { x1: Math.min(xV, 300), x2: Math.min(xV, 300), y1: 200, y2: topo, class: "tq", "stroke-width": 8 }));
       svg.append(S("path", { d: `M${Math.min(xV, 300) - 10} ${topo} h20 M${Math.min(xV, 300) - 7} ${topo - 6} h14`, class: "chapeu" }));
       svg.append(S("line", { x1: xJ, x2: Math.min(xV, 300), y1: laje + 20, y2: laje + 20, class: "cota" }));
@@ -246,9 +251,10 @@
       svg.append(S("rect", { x: 0, y: 20, width: 320, height: 200, class: "solo" }));
       if (!pv) { svg.append(S("rect", { x: x - 0.3 * k, y: 20, width: 0.6 * k, height: h * k, class: "furo" })); svg.append(T(x, 20 + h * k + 16, "CI lado ≥ 0,60 m", "lb b", { "text-anchor": "middle" })); }
       else {
-        const duas = h <= 1.8, bal = duas ? Math.min(1.5, h) : h;
-        if (duas && h > 1.5) svg.append(S("rect", { x: x - 0.3 * k, y: 20, width: 0.6 * k, height: (h - bal) * k, class: "furo" }));
-        svg.append(S("rect", { x: x - 0.55 * k, y: 20 + (h - bal) * k, width: 1.1 * k, height: bal * k, class: "furo" }));
+        const duas = h <= 1.8, cabe = h >= 1.5, bal = duas && cabe ? 1.5 : h;
+        if (duas && cabe && h > 1.5) svg.append(S("rect", { x: x - 0.3 * k, y: 20, width: 0.6 * k, height: (h - bal) * k, class: "furo" }));
+        svg.append(S("rect", { x: x - 0.55 * k, y: 20 + (h - bal) * k, width: 1.1 * k, height: bal * k, class: "furo", ...(duas && !cabe ? { stroke: "var(--no)", "stroke-dasharray": "5 3" } : {}) }));
+        if (duas && !cabe) svg.append(T(x, 20 + h * k + 30, "⚠️ balão ≥ 1,50 m não cabe em " + fmt(h) + " m — ver a norma", "lb red b", { "text-anchor": "middle" }));
         for (let y = 30; y < 20 + h * k - 8; y += 14) svg.append(S("line", { x1: x + 0.55 * k - 10, x2: x + 0.55 * k - 2, y1: y, y2: y, class: "degrau" }));
         svg.append(T(x, Math.min(215, 20 + h * k + 14), "PV Ø ≥ 1,10 m, com degraus", "lb b", { "text-anchor": "middle" }));
       }
