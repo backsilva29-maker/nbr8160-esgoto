@@ -93,6 +93,27 @@ svg.draw{width:100%;height:auto;display:block;margin:6px 0;background:color-mix(
 .apk b{display:block}.apk span{font-size:30px}[data-apk] .apk{display:none}
 model-viewer{width:100%;height:380px;background:color-mix(in srgb,var(--blue) 6%,var(--card));border-radius:16px;--poster-color:transparent}
 .v3d{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px 14px;margin:10px 0;box-shadow:var(--sh)}
+
+/* modo leitura */
+.leit-vazio{text-align:center;padding:24px 10px}.leit-vazio p{color:var(--mu)}
+.leit-bar{position:sticky;top:64px;z-index:3;background:var(--bg);padding:4px 0 2px}
+.leit-ctl{gap:6px}.leit-ctl .btn{margin:0;padding:8px 12px}
+.leit-res{max-height:45vh;overflow:auto}
+.achado{display:block;width:100%;text-align:left;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:8px;margin:4px 0;font:inherit;font-size:14px}
+.achado em{font-style:normal;font-weight:700;color:var(--ac);margin-right:6px}
+.leit-corpo{overflow-x:auto}
+.pagina{margin:6px 0 14px}.pg-num{text-align:center;color:var(--mu);font-size:12px;margin:4px}
+.pagina canvas{display:block;margin:0 auto;border-radius:6px;box-shadow:var(--sh);background:#fff;max-width:none}
+.m-txt .pg-cont{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;font-size:var(--fs,17px);line-height:1.55}
+.m-txt .pg-cont p{margin:0 0 6px}.m-txt .pg-cont p.hl{background:color-mix(in srgb,var(--ac2) 35%,transparent);border-radius:4px}
+.leit-sec{background:color-mix(in srgb,var(--ac) 9%,var(--card));border-left:4px solid var(--ac);border-radius:12px;padding:8px 10px;margin:6px 0}
+.leit-sec>div{margin:4px 0}.leit-sec small{display:block;color:var(--mu)}.leit-sec .chips{margin:4px 0}
+.chip.quadro{background:var(--ac);color:#fff;border-color:var(--ac)}.chip.perg{border-color:var(--ac2)}
+.sum{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--bd);background:none;color:var(--tx);padding:10px 4px;font:inherit}
+.sum.n1{font-weight:700}.sum.n3{padding-left:22px;font-size:14px}.sum em{font-style:normal;color:var(--mu);white-space:nowrap}
+.folha{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end}
+.folha[hidden]{display:none}.folha-in{background:var(--bg);width:100%;max-height:88vh;overflow:auto;border-radius:18px 18px 0 0;padding:10px 14px 30px;animation:sobe .25s}
+@keyframes sobe{from{transform:translateY(40px);opacity:0}}
 </style>
 </head>
 <body>
@@ -150,11 +171,13 @@ model-viewer{width:100%;height:380px;background:color-mix(in srgb,var(--blue) 6%
 </section>
 
 <section class="aba" id="aPdf" hidden>
+  <div id="vLeitura"></div>
+  <div hidden><!-- leitor antigo (mantido p/ compatibilidade do app.js) -->
   <p id="pdfStatus" class="nota"></p>
   <div class="linha"><label class="btn sec" style="color:var(--tx)">📂 Escolher PDF<input id="arq" type="file" accept="application/pdf" hidden></label></div>
   <div class="linha"><button class="btn sec" id="ant">◀</button><input id="pdfPag" type="number" min="1" value="1" style="width:80px"><span>/ <span id="pdfTot">—</span></span><button class="btn sec" id="prox">▶</button></div>
   <canvas id="cv"></canvas>
-  <p class="nota">O PDF fica guardado só neste celular; não é enviado para lugar nenhum.</p>
+  </div>
 </section>
 </main>
 <nav>
@@ -163,7 +186,7 @@ model-viewer{width:100%;height:380px;background:color-mix(in srgb,var(--blue) 6%
   <button data-aba="aGuia"><span>🧭</span>Guia</button>
   <button data-aba="aTreinar"><span>🎯</span>Treinar</button>
   <button data-aba="aCalc"><span>🧮</span>Calcular</button>
-  <button data-aba="aPdf"><span>📄</span>Norma</button>
+  <button data-aba="aPdf"><span>📖</span>Ler</button>
 </nav>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="versao.js"></script>
@@ -172,6 +195,8 @@ model-viewer{width:100%;height:380px;background:color-mix(in srgb,var(--blue) 6%
 <script src="app.js"></script>
 <script src="visual.js"></script>
 <script src="guia.js"></script>
+<script src="leitura-mapa.js"></script>
+<script src="leitura.js"></script>
 <script>
   VISUAL.predio(document.getElementById("vPredio"));
   // 3D com google/model-viewer (carrega só quando pedir)

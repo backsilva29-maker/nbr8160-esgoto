@@ -336,5 +336,11 @@
     box.append(topo, area); menu();
   }
 
-  window.VISUAL = { predio, aprender, treinar };
+  // abre um quadro interativo isolado (usado pelo modo leitura da norma)
+  function abrirTema(id, el) {
+    const t = temas.find(x => x.id === id); if (!t) return false;
+    el.replaceChildren(); const c = H("div", { className: "box diag" });
+    c.innerHTML = `<h3>${t.ico} ${t.tit}</h3><div class="meta">item ${t.item}</div>`; t.fn(c); el.append(c); return t;
+  }
+  window.VISUAL = { predio, aprender, treinar, tema: abrirTema, temas: () => temas.map(t => ({ id: t.id, ico: t.ico, tit: t.tit })) };
 })();

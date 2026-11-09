@@ -12,7 +12,7 @@ let app = ler("app.js")
   .replace('navigator.serviceWorker.register("sw.js")', "Promise.resolve()");
 if (!app.includes('getElementById("pdfw")')) throw new Error("workerSrc do pdf.js não encontrado em app.js");
 const arquivos = { "versao.js": ler("versao.js"), "dados.js": ler("dados.js"), "quiz.js": ler("quiz.js"), "app.js": app,
-  "visual.js": ler("visual.js"), "guia.js": ler("guia.js"), "pdf.min.js": ler("pdf.min.js") };
+  "visual.js": ler("visual.js"), "guia.js": ler("guia.js"), "leitura-mapa.js": ler("leitura-mapa.js"), "leitura.js": ler("leitura.js"), "pdf.min.js": ler("pdf.min.js") };
 html = html.replace('<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>', '<script src="pdf.min.js"></script>');
 let n = 0;
 html = html.replace(/<script src="([^"]+)"><\/script>/g, (m, f) => {

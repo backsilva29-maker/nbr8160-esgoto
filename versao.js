@@ -1,1 +1,1 @@
-window.VERSAO = "08/11 22h30";
+window.VERSAO = "08/11 23h — leitura";

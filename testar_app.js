@@ -10,6 +10,10 @@ const N = ctx.window.NBR, C = ctx.window.CALC;
 const texto = fs.readFileSync(path.join(__dirname, "..", "NBR_8160_texto.txt"), "utf8");
 const paginas = {}; texto.split(/=== PAGINA (\d+) ===/).forEach((b, i, a) => { if (i % 2) paginas[+b] = a[i + 1]; });
 let falhas = 0; const ok = (c, m) => { if (!c) { falhas++; console.log("FALHA:", m); } };
+// portão: todo script do app tem de compilar (um erro de sintaxe derruba a tela inteira no celular)
+for (const f of fs.readdirSync(__dirname).filter(f => f.endsWith(".js") && f !== "testar_app.js" && f !== "embutir.js")) {
+  try { new vm.Script(fs.readFileSync(path.join(__dirname, f), "utf8"), { filename: f }); } catch (e) { ok(false, `sintaxe ${f}: ${e.message}`); }
+}
 
 // (1) subsequência numérica por página
 // nota de rodapé grudada no número da tabela: "1001)" = 100 + nota 1, "503)" = 50 + nota 3
