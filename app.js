@@ -295,7 +295,7 @@ if (typeof document !== "undefined") (function () {
   document.addEventListener("click", e => { const b = e.target.closest(".pg"); if (b) { abrirAba("aPdf"); pagAtual = +b.dataset.pag; mostra(pagAtual); } });
 
   render(); calcGrupo(); calcTQ(); calcCol(); calcCG(); calcRec(); renderPredio(); carregaPdf();
-  let ini = "aBusca"; try { ini = localStorage.getItem("aba") || ini; } catch (e) {}
+  let ini = "aPredio"; try { ini = localStorage.getItem("aba") || ini; } catch (e) {}
   abrirAba(ini);
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 })();
