@@ -1,0 +1,57 @@
+# Gera o APK Android (Capacitor) com o app inteiro dentro (funciona offline) e publica em
+# https://github.com/backsilva29-maker/nbr8160-esgoto/releases/latest/download/NBR8160.apk
+name: APK Android
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: { group: apk, cancel-in-progress: true }
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - name: Chave fixa de assinatura (cache) - mesma chave = atualiza sem desinstalar
+        uses: actions/cache@v4
+        with: { path: ~/.android/debug.keystore, key: nbr8160-debug-keystore-v1 }
+      - name: Gerar chave se nao existir no cache
+        run: |
+          mkdir -p ~/.android
+          [ -f ~/.android/debug.keystore ] || keytool -genkeypair -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10950 -dname "CN=Android Debug,O=Android,C=US"
+      - name: Testes do app (tabelas x norma ficam fora - texto da ABNT nao esta no repo)
+        run: node -e "new Function(require('fs').readFileSync('visual.js','utf8')); new Function(require('fs').readFileSync('app.js','utf8')); console.log('sintaxe ok')"
+      - name: Montar www offline (pdf.js local, sem service worker)
+        run: |
+          mkdir -p www
+          cp index.html dados.js app.js visual.js quiz.js manifest.json icone.svg icone-192.png icone-512.png www/
+          [ -f guia.js ] && cp guia.js www/ || true
+          curl -fsSL https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js -o www/pdf.min.js
+          curl -fsSL https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js -o www/pdf.worker.min.js
+          sed -i 's#https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js#pdf.min.js#' www/index.html
+          sed -i 's#https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js#pdf.worker.min.js#' www/app.js
+          sed -i 's#navigator.serviceWorker.register("sw.js")#Promise.resolve()#' www/app.js
+          sed -i 's#<html lang="pt-BR">#<html lang="pt-BR" data-apk="1">#' www/index.html
+          grep -c "pdf.min.js" www/index.html
+      - name: Capacitor Android
+        run: |
+          npm init -y > /dev/null
+          npm i --no-audit --no-fund @capacitor/core@7.4.4 @capacitor/cli@7.4.4 @capacitor/android@7.4.4
+          npx cap add android
+          for d in android-icones/mipmap-*; do cp $d/*.png android/app/src/main/res/$(basename $d)/; done
+          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher*.xml
+          npx cap sync android
+      - name: Compilar APK
+        run: cd android && ./gradlew assembleDebug --no-daemon -q && cp app/build/outputs/apk/debug/app-debug.apk ../NBR8160.apk && ls -la ../NBR8160.apk
+      - name: Publicar (release "app")
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          gh release delete app -y --cleanup-tag || true
+          gh release create app NBR8160.apk --title "App NBR 8160 para Android" --notes "Instale o NBR8160.apk no celular (permitir 'fontes desconhecidas'). Versão ${{ github.sha }}."
+      - uses: actions/upload-artifact@v4
+        with: { name: NBR8160-apk, path: NBR8160.apk }
